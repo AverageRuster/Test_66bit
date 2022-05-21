@@ -1,0 +1,43 @@
+﻿@model Player
+
+@using (Html.BeginForm())
+{
+    <p>
+        Имя<br />
+        @Html.EditorFor(player => player.Name)
+        @Html.ValidationMessageFor(player => player.Name)
+    </p>
+    <p>
+        Фамилия<br />
+        @Html.EditorFor(player => player.Surname)
+        @Html.ValidationMessageFor(player => player.Surname)
+    </p>
+    <p>
+        Пол<br />
+        <select asp-for="Gender">
+            <option value="true">Мужчина</option>
+            <option value="false">Женщина</option>
+        </select>
+        @Html.ValidationMessageFor(player => player.Gender)
+    </p>
+    <p>
+        Дата рождения<br />
+        @Html.EditorFor(player => player.BirthDate)
+        @Html.ValidationMessageFor(player => player.BirthDate)
+    </p>
+    <p>
+        Команда<br />
+        @Html.DropDownListFor(player => player.TeamId, ViewBag.Teams as SelectList)
+    </p>
+    <p>
+        Страна<br />
+        <select asp-for="Country">
+            <option>Россия</option>
+            <option>США</option>
+            <option>Германия</option>
+        </select>
+        @Html.ValidationMessageFor(player => player.Country)
+    </p>
+    <input type="submit" value="Добавить" />
+    <a asp-action="AllPlayers">Отмена</a>
+}
