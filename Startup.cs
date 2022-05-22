@@ -1,3 +1,4 @@
+using Test_66bit.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -27,6 +28,7 @@ namespace Test_66bit
         {
             services.AddControllersWithViews();
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +56,7 @@ namespace Test_66bit
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Players}/{action=AllPlayers}/{id?}");
+                endpoints.MapHub<PlayersHub>("/send");
             });
         }
     }

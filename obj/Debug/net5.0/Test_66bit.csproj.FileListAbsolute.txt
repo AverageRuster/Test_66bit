@@ -75,3 +75,4 @@ C:\Users\AverageRuster\Documents\GitHub\Test_66bit\obj\Debug\net5.0\Test_66bit.g
 C:\Users\AverageRuster\Documents\GitHub\Test_66bit\bin\Debug\net5.0\Microsoft.AspNet.SignalR.Core.dll
 C:\Users\AverageRuster\Documents\GitHub\Test_66bit\bin\Debug\net5.0\Microsoft.AspNet.SignalR.SqlServer.dll
 C:\Users\AverageRuster\Documents\GitHub\Test_66bit\bin\Debug\net5.0\System.Net.WebSockets.WebSocketProtocol.dll
+C:\Users\AverageRuster\Documents\GitHub\Test_66bit\bin\Debug\net5.0\libman.json

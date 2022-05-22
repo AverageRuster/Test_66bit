@@ -25,20 +25,10 @@ namespace Test_66bit.Controllers
         [HttpGet]
         public IActionResult AddOrEditPlayer(int? id, bool add)
         {
-            SelectList teams = new SelectList(db.Teams, "Id", "Name");
-            ViewBag.Teams = teams;
+            ViewBag.Teams = db.Teams;
+            ViewBag.Add = add;
+            
 
-            if (add)
-            {
-                ViewBag.Title = "Добавление";
-            }
-            else
-            {
-                ViewBag.Title = "Редактирование";
-
-                var player = db.Players.Find(id);
-                return View(player);
-            }
             return View();
         }
 

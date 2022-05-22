@@ -1,43 +1,71 @@
 ﻿@model Player
 
-@using (Html.BeginForm())
-{
-    <p>
-        Имя<br />
-        @Html.EditorFor(player => player.Name)
-        @Html.ValidationMessageFor(player => player.Name)
-    </p>
-    <p>
-        Фамилия<br />
-        @Html.EditorFor(player => player.Surname)
-        @Html.ValidationMessageFor(player => player.Surname)
-    </p>
-    <p>
-        Пол<br />
-        <select asp-for="Gender">
+@{
+    ViewBag.Title = ViewBag.Add ? "Добавление" : "Редактирование";
+}
+<html>
+<body>
+    @using (Html.BeginForm())
+    {
+        <label>Имя</label><br />
+        <input asp-for="Name" id="name" /><br /><br />
+
+        <label>Фамилия</label><br />
+        <input asp-for="Surname" id="surname" /><br /><br />
+
+        <label>Пол</label><br />
+        <select asp-for="Gender" id="gender">
             <option value="true">Мужчина</option>
             <option value="false">Женщина</option>
-        </select>
-        @Html.ValidationMessageFor(player => player.Gender)
-    </p>
-    <p>
-        Дата рождения<br />
-        @Html.EditorFor(player => player.BirthDate)
-        @Html.ValidationMessageFor(player => player.BirthDate)
-    </p>
-    <p>
-        Команда<br />
-        @Html.DropDownListFor(player => player.TeamId, ViewBag.Teams as SelectList)
-    </p>
-    <p>
-        Страна<br />
-        <select asp-for="Country">
+        </select><br /><br />
+
+        <label>Дата рождения</label><br />
+        <input asp-for="BirthDate" id="birthDate" /><br /><br />
+
+        <label>Команда</label><br />
+        <select asp-for="TeamId" id="teamId">
+            @foreach (var team in ViewBag.Teams)
+            {
+                <option value=@team.Id>@team.Name</option>
+            }
+        </select><br /><br />
+
+        <label>Страна</label><br />
+        <select asp-for="Country" id="country">
             <option>Россия</option>
             <option>США</option>
             <option>Германия</option>
-        </select>
-        @Html.ValidationMessageFor(player => player.Country)
-    </p>
-    <input type="submit" value="Добавить" />
-    <a asp-action="AllPlayers">Отмена</a>
-}
+        </select><br /><br />
+
+        @if (ViewBag.Add)
+        {
+            <input type="submit" id="addBtn" value="Добавить" />
+        }
+        else
+        {
+            <input type="submit" id="addBtn" value="Изменить" />
+        }
+        <a asp-action="AllPlayers">Отмена</a>
+    }
+
+    <script src="../js/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/send")
+            .build();
+
+        document.getElementById("addBtn").addEventListener("click", function (e) {
+            let name = document.getElementById("name").value;
+            let surname = document.getElementById("surname").value;
+            let gender = document.getElementById("gender").value == 'true';
+            //let birthDate = date.Parse(document.getElementById("birthDate").value);
+            let teamId = parseInt(document.getElementById("teamId").value);
+            let country = document.getElementById("country").value;
+
+            hubConnection.invoke("Send", { "name": name, "surname": surname, "gender": gender/*, "birthDate": birthDate*/, "teamId": teamId, "country": country }, null);
+        });
+
+        hubConnection.start();
+    </script>
+</body>
+</html>
