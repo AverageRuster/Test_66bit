@@ -6,9 +6,9 @@ namespace Test_66bit.Hubs
 {
     public class PlayersHub : Hub
     {
-        public async Task Send(Player player, int? rowId)
+        public async Task Send(Player player, int? rowId, string teamName)
         {
-            await this.Clients.All.SendAsync("Send", player, rowId);
+            await this.Clients.All.SendAsync("Send", player, rowId, teamName);
         }
     }
 }

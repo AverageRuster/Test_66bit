@@ -24,7 +24,7 @@ namespace Test_66bit.Models
         public int? TeamId { get; set; }
 
         [ForeignKey(nameof(TeamId))]
-        public virtual Team Team { get; set; }
+        public Team Team { get; set; }
 
         [Required]
         public string Country { get; set; }

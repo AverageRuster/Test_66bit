@@ -56,6 +56,7 @@ namespace Test_66bit
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Players}/{action=AllPlayers}/{id?}");
+
                 endpoints.MapHub<PlayersHub>("/send");
             });
         }

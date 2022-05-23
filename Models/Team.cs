@@ -9,5 +9,6 @@ namespace Test_66bit.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public IEnumerable<Player> Players { get; set; }
     }
 }

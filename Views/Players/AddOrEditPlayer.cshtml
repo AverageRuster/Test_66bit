@@ -7,31 +7,37 @@
 <body>
     @using (Html.BeginForm())
     {
-        <label>Имя</label><br />
-        <input asp-for="Name" id="name" /><br /><br />
+        <label>Имя*</label><br />
+        <input asp-for="Name" id="name" required /><br /><br />
 
-        <label>Фамилия</label><br />
-        <input asp-for="Surname" id="surname" /><br /><br />
+        <label>Фамилия*</label><br />
+        <input asp-for="Surname" id="surname" required /><br /><br />
 
-        <label>Пол</label><br />
-        <select asp-for="Gender" id="gender">
+        <label>Пол*</label><br />
+        <select asp-for="Gender" id="gender" required>
             <option value="true">Мужчина</option>
             <option value="false">Женщина</option>
         </select><br /><br />
 
-        <label>Дата рождения</label><br />
-        <input asp-for="BirthDate" id="birthDate" /><br /><br />
+        <label>Дата рождения*</label><br />
+        <input asp-for="BirthDate" id="birthDate" type="date" required /><br /><br />
 
         <label>Команда</label><br />
-        <select asp-for="TeamId" id="teamId">
+        <select asp-for="TeamId" id="teams">
+            <option value=@null></option>
             @foreach (var team in ViewBag.Teams)
             {
                 <option value=@team.Id>@team.Name</option>
             }
         </select><br /><br />
 
-        <label>Страна</label><br />
-        <select asp-for="Country" id="country">
+        <input id="newTeamName" />
+        <input type="button" id="addNewTeam" value="Добавить команду" /><br />
+        <span id="newTeamStatus" hidden></span><br /><br />
+
+        <label>Страна*</label><br />
+        <select asp-for="Country" id="country" required>
+            <option value=@null>Выберите страну</option>
             <option>Россия</option>
             <option>США</option>
             <option>Германия</option>
@@ -48,7 +54,7 @@
         <a asp-action="AllPlayers">Отмена</a>
     }
 
-    <script src="../js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="/js/signalr/dist/browser/signalr.min.js"></script>
     <script>
         const hubConnection = new signalR.HubConnectionBuilder()
             .withUrl("/send")
@@ -58,14 +64,54 @@
             let name = document.getElementById("name").value;
             let surname = document.getElementById("surname").value;
             let gender = document.getElementById("gender").value == 'true';
-            //let birthDate = date.Parse(document.getElementById("birthDate").value);
-            let teamId = parseInt(document.getElementById("teamId").value);
+            let birthDate = new Date(document.getElementById("birthDate").value);
+            let teamsElement = document.getElementById("teams");
+            let teamName = teamsElement.options[teamsElement.selectedIndex].text;
             let country = document.getElementById("country").value;
+            let rowIdStr = "@ViewBag.RowId";
+            let rowId = rowIdStr == "" ? null : parseInt(rowIdStr);
 
-            hubConnection.invoke("Send", { "name": name, "surname": surname, "gender": gender/*, "birthDate": birthDate*/, "teamId": teamId, "country": country }, null);
+            hubConnection.invoke("Send", { "name": name, "surname": surname, "gender": gender, "birthDate": birthDate, "country": country }, rowId, teamName);
         });
 
         hubConnection.start();
+    </script>
+    <script>
+        document.getElementById("addNewTeam").addEventListener("click", function (e) {
+            let teamsElement = document.getElementById("teams");
+            let newTeamNameElement = document.getElementById("newTeamName");
+            let newTeamStatus = document.getElementById("newTeamStatus");
+            if (!newTeamNameElement.value.trim() == "") {
+                $.ajax({
+                    url: 'AddTeam',
+                    data: { name: newTeamNameElement.value },
+                    success: function (result) {
+                        if (!result.oldTeam) {
+                            let newTeamOption = document.createElement('option');
+                            newTeamOption.innerText = newTeamNameElement.value;
+                            newTeamOption.value = result.id;
+                            teamsElement.appendChild(newTeamOption);
+                            newTeamNameElement.value = null;
+                            newTeamStatus.style.color = "green";
+                            newTeamStatus.innerText = "Команда успешно добавлена";
+                            newTeamStatus.hidden = false;
+                        }
+                        else {
+                            newTeamNameElement.value = newTeamNameElement.value.trim();
+                            newTeamStatus.style.color = "red";
+                            newTeamStatus.innerText = "Такая команда уже существует";
+                            newTeamStatus.hidden = false;
+                        }
+                    }
+                });
+            }
+            else {
+                newTeamNameElement.value = newTeamNameElement.value.trim();
+                newTeamStatus.style.color = "red";
+                newTeamStatus.innerText = "Вы не ввели название команды";
+                newTeamStatus.hidden = false;
+            }
+        });
     </script>
 </body>
 </html>

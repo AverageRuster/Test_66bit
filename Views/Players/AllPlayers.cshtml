@@ -2,6 +2,7 @@
 
 @{
     ViewBag.Title = "Все пользователи";
+    var rowsCounter = 1;
 }
 <html>
 <body>
@@ -16,6 +17,7 @@
             <td>Страна</td>
             <td></td>
         </tr>
+
         @foreach (var item in Model)
         {
             <tr>
@@ -28,9 +30,9 @@
                 }
                 else
                 {
-                    <td id="gender">Женщина</td="gender">
+                    <td id="gender">Женщина</td>
                 }
-                <td id="birdDate">@item.BirthDate</td>
+                <td id="birdDate">@item.BirthDate.ToShortDateString()</td>
                 @if (item.Team != null)
                 {
                     <td id="team">@item.Team.Name</td>
@@ -41,12 +43,13 @@
                 }
                 <td id="country">@item.Country</td>
                 <td>
-                    <a asp-controller="Players" asp-action="AddOrEditPlayer" asp-route-id="@item.Id" asp-route-add="false" id="edit">Изменить</a>
+                    <a asp-controller="Players" asp-action="AddOrEditPlayer" asp-route-id="@item.Id" asp-route-add="false" id="@rowsCounter+edt" asp-route-rowId="@rowsCounter">Изменить</a>
                 </td>
                 <td>
-                    <a asp-controller="Players" asp-action="RemovePlayer" asp-route-id="@item.Id" id="remove">Удалить</a>
+                    <a asp-controller="Players" asp-action="RemovePlayer" asp-route-id="@item.Id" id="@rowsCounter+rmv">Удалить</a>
                 </td>
             </tr>
+            rowsCounter++;
         }
     </table>
 
@@ -55,59 +58,75 @@
         const hubConnection = new signalR.HubConnectionBuilder()
             .withUrl("/send")
             .build();
-      
+
         let table = document.getElementById("playersTable");
 
-        //Удаление
-        for (var i = 0; i < table.rows.length; i++) {
-            document.getElementById("remove").addEventListener("click", function (e) {
-                let rowId = i;
+        for (var i = 1; i < table.rows.length; i++) {
+            let rowId = i;
 
-                hubConnection.invoke("Send", null, rowId);
+            document.getElementById(i + "+rmv").addEventListener("click", function (e) {               
+                hubConnection.invoke("Send", null, rowId, null);
             });
         }
-        
-        hubConnection.on("Send", function (player, rowId) {
+
+        hubConnection.on("Send", function (player, rowId, teamName) {
             if (player == null && rowId != null) {
                 table.deleteRow(rowId);
             }
-            else if (player != null && rowId != null) {
-                let newRow = rowId;
-                newRow.insertCell(0).innerText = player.name;
-                newRow.insertCell(1).innerText = player.surname;
-                newRow.insertCell(2).innerText = player.gender ? "Мужчина" : "Женщина";
-                newRow.insertCell(3);
-                newRow.insertCell(4).innerText = player.teamId;
-                newRow.insertCell(5).innerText = player.country;
-
-                let changeElement = newRow.insertCell(6).createElement("a");
-                //changeElement.setAttribute('asp-controller', "Players");
-                //changeElement.setAttribute('asp-action', "EditPlayer");
-                changeElement.innerText("Изменить");
-
-                let removeElement = newRow.insertCell(7).createElement("a");
-                //removeElement.setAttribute('asp-controller', "Players");
-                //removeElement.setAttribute('asp-action', "RemovePlayer");
-                removeElement.innerText("Удалить");
-            }
             else {
-                let newRow = insertRow(rowId);
-                newRow.insertCell(0).innerText = player.name;
-                newRow.insertCell(1).innerText = player.surname;
-                newRow.insertCell(2).innerText = player.gender ? "Мужчина" : "Женщина";
-                newRow.insertCell(3);
-                newRow.insertCell(4).innerText = player.teamId;
-                newRow.insertCell(5).innerText = player.country;
+                if (player.name != "" && player.surname != "" && player.country != "") {
+                    if (rowId == null) {
+                        let tr = document.createElement("tr");
 
-                let changeElement = newRow.insertCell(6).createElement("a");
-                //changeElement.setAttribute('asp-controller', "Players");
-                //changeElement.setAttribute('asp-action', "EditPlayer");
-                changeElement.innerText("Изменить");
+                        let name = document.createElement("td")
+                        name.innerText = player.name;
 
-                let removeElement = newRow.insertCell(7).createElement("a");
-                //removeElement.setAttribute('asp-controller', "Players");
-                //removeElement.setAttribute('asp-action', "RemovePlayer");
-                removeElement.innerText("Удалить");
+                        let surname = document.createElement("td")
+                        surname.innerText = player.surname;
+
+                        let gender = document.createElement("td")
+                        gender.innerText = player.gender ? "Мужчина" : "Женщина";
+
+                        let birthDate = document.createElement("td")
+                        birthDate.innerText = player.birthDate;
+
+                        let tName = document.createElement("td")
+                        tName.innerText = teamName;
+
+                        let country = document.createElement("td")
+                        country.innerText = player.country;
+
+                        let editTd = document.createElement("td");
+                        let edit = document.createElement("a");
+                        edit.innerText = "Изменить";
+                        edit.href = "Players/AddOrEditPlayer/" + player.id + "?add=false&rowId=" + table.rows.length;
+
+                        let removeTd = document.createElement("td");
+                        let remove = document.createElement("a");
+                        remove.innerText = "Удалить";
+                        remove.href = "Players/RemovePlayer/" + player.id;
+
+                        tr.appendChild(name);
+                        tr.appendChild(surname);
+                        tr.appendChild(gender);
+                        tr.appendChild(birthDate);
+                        tr.appendChild(tName);
+                        tr.appendChild(country);
+                        tr.appendChild(edit);
+                        tr.appendChild(remove);
+                        table.appendChild(tr);
+                    }
+                    else {
+                        let row = table.rows[rowId]
+
+                        row.cells[0].innerText = player.name;
+                        row.cells[1].innerText = player.surname;
+                        row.cells[2].innerText = player.gender ? "Мужчина" : "Женщина";
+                        row.cells[3].innerText = player.birthDate;
+                        row.cells[4].innerText = teamName;
+                        row.cells[5].innerText = player.country;
+                    }
+                }
             }
         });
 

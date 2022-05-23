@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace Test_66bit.Controllers
 {
@@ -18,16 +19,22 @@ namespace Test_66bit.Controllers
 
         public IActionResult AllPlayers()
         {
-            var players = db.Players;
+            var players = db.Players.Include(p => p.Team);
             return View(players);
         }
 
         [HttpGet]
-        public IActionResult AddOrEditPlayer(int? id, bool add)
+        public IActionResult AddOrEditPlayer(int? id, bool add, int? rowId)
         {
             ViewBag.Teams = db.Teams;
             ViewBag.Add = add;
-            
+            ViewBag.RowId = rowId;
+
+            if (!add)
+            {
+                var player = db.Players.Find(id);
+                return View(player);
+            }
 
             return View();
         }
@@ -61,6 +68,28 @@ namespace Test_66bit.Controllers
             db.SaveChanges();
 
             return RedirectToAction("AllPlayers");
+        }
+
+        public IActionResult AddTeam(string name)
+        {
+            name = name.Trim();
+            Team team = new();
+            team.Name = name;
+            int? teamId = null;
+            bool old = db.Teams.Any(t => t.Name == name);
+
+            if (old)
+            {
+                teamId = db.Teams.FirstOrDefault(t => t.Name == name).Id;
+            }
+            else
+            {
+                db.Teams.Add(team);
+                db.SaveChanges();
+                teamId = db.Teams.FirstOrDefault(t => t == team).Id;
+            }
+
+            return Json(new { id = teamId, oldTeam = old });
         }
     }
 }
